@@ -60,7 +60,6 @@ if ZUK_CAMERA
 source "drivers/media/platform/msm/camera_v2z/Kconfig"
 endif # ZUK_CAMERA
 
-source "drivers/media/platform/msm/ais/Kconfig"
 source "drivers/media/platform/msm/dvb/Kconfig"
 source "drivers/media/platform/msm/broadcast/Kconfig"
 source "drivers/media/platform/msm/sde/Kconfig"
