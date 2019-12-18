@@ -123,8 +123,8 @@
 &firmware {
 	android {
 		fstab {
-			factory {
-				dev = "/dev/block/platform/soc/7464900.sdhci/by-name/vendor";
+			vendor {
+				dev = "/dev/block/platform/soc/7464900.sdhci/by-name/factory";
 			};
 			system {
 				dev = "/dev/block/platform/soc/7464900.sdhci/by-name/system";
