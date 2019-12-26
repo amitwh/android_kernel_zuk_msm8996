@@ -444,7 +444,6 @@ int ext4_encrypted_zeroout(struct inode *inode, struct ext4_extent *ex)
 			goto errout;
 		}
 		err = submit_bio_wait(WRITE, bio);
-                err = submit_bio_wait(WRITE, bio);
 		if ((err == 0) && !test_bit(BIO_UPTODATE, &bio->bi_flags))
 			err = -EIO;
 		bio_put(bio);
@@ -458,9 +457,15 @@ errout:
 	return err;
 }
 
-bool ext4_valid_contents_enc_mode(uint32_t mode)
+bool ext4_valid_enc_modes(uint32_t contents_mode, uint32_t filenames_mode)
 {
-	return (mode == EXT4_ENCRYPTION_MODE_AES_256_XTS);
+	if (contents_mode == EXT4_ENCRYPTION_MODE_AES_256_XTS)
+		return filenames_mode == EXT4_ENCRYPTION_MODE_AES_256_CTS;
+
+	if (contents_mode == EXT4_ENCRYPTION_MODE_SPECK128_256_XTS)
+		return filenames_mode == EXT4_ENCRYPTION_MODE_SPECK128_256_CTS;
+
+	return false;
 }
 
 /**

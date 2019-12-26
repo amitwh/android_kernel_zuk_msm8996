@@ -26,7 +26,6 @@
 #include <linux/of_slimbus.h>
 #include <linux/timer.h>
 #include <linux/msm-sps.h>
-#include <linux/reboot.h>
 #include "slim-msm.h"
 
 #define NGD_SLIM_NAME	"ngd_msm_ctrl"
@@ -1319,7 +1318,7 @@ capability_retry:
 	/* reconnect BAM pipes if needed and enable NGD */
 	ngd_slim_setup(dev);
 
-	timeout = wait_for_completion_timeout(&dev->reconf, 3 * HZ);
+	timeout = wait_for_completion_timeout(&dev->reconf, HZ);
 	if (!timeout) {
 		u32 cfg = readl_relaxed(dev->base +
 					 NGD_BASE(dev->ctrl.nr, dev->ver));
@@ -1399,7 +1398,6 @@ static int ngd_slim_rx_msgq_thread(void *data)
 		int retries = 0;
 		u8 wbuf[8];
 
-		set_current_state(TASK_INTERRUPTIBLE);
 		wait_for_completion_interruptible(notify);
 
 		txn.dt = SLIM_MSG_DEST_LOGICALADDR;
@@ -1461,7 +1459,6 @@ static int ngd_notify_slaves(void *data)
 	}
 
 	while (!kthread_should_stop()) {
-		set_current_state(TASK_INTERRUPTIBLE);
 		wait_for_completion_interruptible(&dev->qmi.slave_notify);
 		/* Probe devices for first notification */
 		if (!i) {
