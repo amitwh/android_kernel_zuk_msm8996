@@ -52,6 +52,13 @@ ssize_t bw_show(struct device *dev, struct device_attribute *attr,
 			bus_node->lnode_list[i].lnode_ab[ACTIVE_CTX],
 			bus_node->lnode_list[i].lnode_ib[DUAL_CTX],
 			bus_node->lnode_list[i].lnode_ab[DUAL_CTX]);
+		trace_printk(
+		"[%d]:%s:Act_IB %llu Act_AB %llu Slp_IB %llu Slp_AB %llu\n",
+			i, bus_node->lnode_list[i].cl_name,
+			bus_node->lnode_list[i].lnode_ib[ACTIVE_CTX],
+			bus_node->lnode_list[i].lnode_ab[ACTIVE_CTX],
+			bus_node->lnode_list[i].lnode_ib[DUAL_CTX],
+			bus_node->lnode_list[i].lnode_ab[DUAL_CTX]);
 	}
 	off += scnprintf((buf + off), PAGE_SIZE,
 	"Max_Act_IB %llu Sum_Act_AB %llu Act_Util_fact %d Act_Vrail_comp %d\n",
@@ -61,6 +68,18 @@ ssize_t bw_show(struct device *dev, struct device_attribute *attr,
 		bus_node->node_bw[ACTIVE_CTX].vrail_used);
 	off += scnprintf((buf + off), PAGE_SIZE,
 	"Max_Slp_IB %llu Sum_Slp_AB %llu Slp_Util_fact %d Slp_Vrail_comp %d\n",
+		bus_node->node_bw[DUAL_CTX].max_ib,
+		bus_node->node_bw[DUAL_CTX].sum_ab,
+		bus_node->node_bw[DUAL_CTX].util_used,
+		bus_node->node_bw[DUAL_CTX].vrail_used);
+	trace_printk(
+	"Max_Act_IB %llu Sum_Act_AB %llu Act_Util_fact %d Act_Vrail_comp %d\n",
+		bus_node->node_bw[ACTIVE_CTX].max_ib,
+		bus_node->node_bw[ACTIVE_CTX].sum_ab,
+		bus_node->node_bw[ACTIVE_CTX].util_used,
+		bus_node->node_bw[ACTIVE_CTX].vrail_used);
+	trace_printk(
+	"Max_Slp_IB %llu Sum_Slp_AB %lluSlp_Util_fact %d Slp_Vrail_comp %d\n",
 		bus_node->node_bw[DUAL_CTX].max_ib,
 		bus_node->node_bw[DUAL_CTX].sum_ab,
 		bus_node->node_bw[DUAL_CTX].util_used,
@@ -1026,7 +1045,6 @@ static struct device *msm_bus_device_init(
 	device_create_file(bus_dev, &dev_attr_bw);
 	INIT_LIST_HEAD(&bus_node->devlist);
 	return bus_dev;
-
 err_put_device:
 	put_device(bus_dev);
 	bus_dev = NULL;

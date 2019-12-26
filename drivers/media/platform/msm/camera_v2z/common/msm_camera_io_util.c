@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2014, The Linux Foundataion. All rights reserved.
+/* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -16,7 +16,7 @@
 #include <linux/regulator/consumer.h>
 #include <linux/io.h>
 #include <linux/err.h>
-#include <soc/qcom/camera2.h>
+#include <soc/qcom/ais.h>
 #include <linux/msm-bus.h>
 #include "msm_camera_io_util.h"
 
@@ -50,9 +50,9 @@ int32_t msm_camera_io_w_block(const u32 *addr, void __iomem *base,
 	return 0;
 }
 
-/* This API is to write a block of registers
-*  which is like a 2 dimensional array table with
-*  register offset and data */
+/** This API is to write a block of registers
+*   which is like a 2 dimensional array table with
+*   register offset and data */
 int32_t msm_camera_io_w_reg_block(const u32 *addr, void __iomem *base,
 	u32 len)
 {
@@ -354,12 +354,13 @@ int msm_cam_clk_enable(struct device *dev, struct msm_cam_clk_info *clk_info,
 		}
 	} else {
 		for (i = num_clk - 1; i >= 0; i--) {
-			if (clk_ptr[i] != NULL) {
+			if (!IS_ERR_OR_NULL(clk_ptr[i])) {
 				CDBG("%s disable %s\n", __func__,
 					clk_info[i].clk_name);
 				clk_disable(clk_ptr[i]);
 				clk_unprepare(clk_ptr[i]);
 				clk_put(clk_ptr[i]);
+				clk_ptr[i] = NULL;
 			}
 		}
 	}
@@ -373,10 +374,11 @@ cam_clk_set_err:
 	clk_put(clk_ptr[i]);
 cam_clk_get_err:
 	for (i--; i >= 0; i--) {
-		if (clk_ptr[i] != NULL) {
+		if (!IS_ERR_OR_NULL(clk_ptr[i])) {
 			clk_disable(clk_ptr[i]);
 			clk_unprepare(clk_ptr[i]);
 			clk_put(clk_ptr[i]);
+			clk_ptr[i] = NULL;
 		}
 	}
 	return rc;
@@ -394,8 +396,14 @@ int msm_camera_config_vreg(struct device *dev, struct camera_vreg_t *cam_vreg,
 		pr_err("%s:%d vreg sequence invalid\n", __func__, __LINE__);
 		return -EINVAL;
 	}
+
 	if (!num_vreg_seq)
 		num_vreg_seq = num_vreg;
+
+	if ((cam_vreg == NULL) && num_vreg_seq) {
+		pr_err("%s:%d cam_vreg NULL\n", __func__, __LINE__);
+		return -EINVAL;
+	}
 
 	if (config) {
 		for (i = 0; i < num_vreg_seq; i++) {
@@ -840,4 +848,3 @@ int msm_camera_hw_write_dt_reg_settings(void __iomem *base,
 		pr_err("%s: Failed dt reg setting write\n", __func__);
 	return rc;
 }
-
